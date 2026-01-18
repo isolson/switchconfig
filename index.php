@@ -155,15 +155,16 @@ if($cSwitch != null) {
 						<?php } ?>
 						<?php
 						$last_group = '';
-						foreach(SWITCHES as $s) {
+						$allSwitches = getAllSwitches();
+						foreach($allSwitches as $s) {
 							if($s['group'] != $last_group) {
 								echo "</optgroup>\n";
-								echo "<optgroup label='" . $s['group'] . "'>\n";
+								echo "<optgroup label='" . htmlspecialchars($s['group']) . "'>\n";
 								$last_group = $s['group'];
 							}
 							$select = "";
 							if($cSwitch != null && $s['addr'] == $cSwitch['addr']) $select = "selected";
-							echo "<option value='" . $s['addr'] . "' $select>" . $s['name'] . "</option>\n";
+							echo "<option value='" . htmlspecialchars($s['addr']) . "' $select>" . htmlspecialchars($s['name']) . "</option>\n";
 						}
 						?>
 					</select>

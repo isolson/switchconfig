@@ -3,14 +3,25 @@
 require_once('config.php');
 require_once('lang.php');
 require_once('php/session-options.php');
+require_once('php/auth.php');
+require_once('php/switchmanagement.php');
 
+// Check if setup is required
+if (needsSetup()) {
+	header('Location: setup.php');
+	exit();
+}
 
 $info = '';
 $infoClass = '';
 
-if(isset($_SESSION['username']) && isset($_GET['logout'])) {
+if(isset($_SESSION['web_user_authenticated']) && isset($_GET['logout'])) {
 
-	// sign out
+	// Sign out web user
+	endWebSession();
+	// Also clear switch credentials
+	unset($_SESSION['username']);
+	unset($_SESSION['password']);
 	session_unset();
 	session_destroy();
 	$infoClass = 'ok';
@@ -18,32 +29,76 @@ if(isset($_SESSION['username']) && isset($_GET['logout'])) {
 
 } elseif(isset($_POST['username']) && isset($_POST['password'])) {
 
-	// test connection, if username and password is OK
-	foreach(SWITCHES as $s) {
-		$connection = ssh2_connect($s['addr'], 22);
-		if($connection !== false) {
-			if(ssh2_auth_password($connection, $_POST['username'], $_POST['password']) !== false) {
-				// auth OK
-				$_SESSION['username'] = $_POST['username'];
-				$_SESSION['password'] = $_POST['password'];
-				$_SESSION['last_activity'] = time(); // set last activity time stamp for timeout
+	// Try web user authentication first
+	$webUser = authenticateWebUser($_POST['username'], $_POST['password']);
 
-				// redirect to desired page
-				$redirect = 'index.php';
-				if(!empty($_GET['redirect'])
-				&& substr($_GET['redirect'], 0, 1) === '/') { // only allow relative URLs beginning with '/', do not redirect to other websites!
-					$redirect = $_GET['redirect'];
+	if ($webUser !== false) {
+		// Web authentication successful
+		startWebSession($webUser);
+
+		// Try to auto-authenticate switch credentials if stored
+		$switchCreds = getDefaultSwitchCredentials();
+		if ($switchCreds !== null) {
+			// Test if credentials work on a switch
+			$switches = getMergedSwitches();
+			$authSuccess = false;
+			foreach ($switches as $s) {
+				$connection = @ssh2_connect($s['addr'], 22);
+				if ($connection !== false) {
+					if (@ssh2_auth_password($connection, $switchCreds['username'], $switchCreds['password']) !== false) {
+						$_SESSION['username'] = $switchCreds['username'];
+						$_SESSION['password'] = $switchCreds['password'];
+						$_SESSION['last_activity'] = time();
+						$authSuccess = true;
+					}
+					break;
 				}
-				header('Location: '.$redirect);
-				die('Happy configuring!');
 			}
-			break; // only test first switch (testing all switches would take too long)
 		}
-	}
 
-	// error message - login not valid
-	$infoClass = 'error';
-	$info = translate('Login failed', false);
+		// Redirect to desired page
+		$redirect = 'index.php';
+		if(!empty($_GET['redirect'])
+		&& substr($_GET['redirect'], 0, 1) === '/') {
+			$redirect = $_GET['redirect'];
+		}
+		header('Location: '.$redirect);
+		die('Happy configuring!');
+
+	} else {
+		// Web auth failed, try legacy switch-only auth
+		// This supports backward compatibility when users haven't set up web auth
+		$switches = getMergedSwitches();
+		$switchAuthSuccess = false;
+
+		foreach($switches as $s) {
+			$connection = @ssh2_connect($s['addr'], 22);
+			if($connection !== false) {
+				if(@ssh2_auth_password($connection, $_POST['username'], $_POST['password']) !== false) {
+					// Switch auth OK - but only if web users don't exist
+					if (!isDatastoreInitialized()) {
+						$_SESSION['username'] = $_POST['username'];
+						$_SESSION['password'] = $_POST['password'];
+						$_SESSION['last_activity'] = time();
+
+						$redirect = 'index.php';
+						if(!empty($_GET['redirect'])
+						&& substr($_GET['redirect'], 0, 1) === '/') {
+							$redirect = $_GET['redirect'];
+						}
+						header('Location: '.$redirect);
+						die('Happy configuring!');
+					}
+					$switchAuthSuccess = true;
+				}
+				break;
+			}
+		}
+
+		// Error message - login not valid
+		$infoClass = 'error';
+		$info = translate('Login failed', false);
+	}
 
 } elseif(isset($_GET['reason']) && $_GET['reason'] == 'unavailable') {
 
@@ -60,9 +115,19 @@ if(isset($_SESSION['username']) && isset($_GET['logout'])) {
 	$infoClass = 'warn';
 	$info = translate('Please log in first.', false);
 
-} elseif(isset($_SESSION['username']) && isset($_SESSION['password'])) {
+} elseif(isset($_GET['reason']) && $_GET['reason'] == 'setup_complete') {
 
-	// already signed in
+	$infoClass = 'ok';
+	$info = translate('Setup complete! Please log in.', false);
+
+} elseif(isWebUserAuthenticated()) {
+
+	// Already signed in via web auth
+	header('Location: index.php'); exit();
+
+} elseif(!isDatastoreInitialized() && isset($_SESSION['username']) && isset($_SESSION['password'])) {
+
+	// Legacy: already signed in via switch auth (no web users exist)
 	header('Location: index.php'); exit();
 
 }
@@ -114,8 +179,8 @@ if(isset($_SESSION['username']) && isset($_GET['logout'])) {
 					<?php translate('This web application allows you to configure Cisco switches through a graphical interface.'); ?>
 				</p>
 				<p class='toolbar-margin-top'>
-					<b><?php translate('Switch Authentication'); ?></b><br>
-					<?php translate('Please log in with your switch credentials (SSH).'); ?>
+					<b><?php translate('Web Interface Login'); ?></b><br>
+					<?php translate('Please log in with your web interface credentials.'); ?>
 				</p>
 			</div>
 

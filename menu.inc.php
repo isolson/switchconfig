@@ -32,14 +32,22 @@
 		<?php } ?>
 		<div style='float: right;'>
 			<?php
+			// Get username from web user session or legacy switch session
 			$htmlUsername = '';
-			if(isset($_SESSION['username']))
+			if(isset($_SESSION['web_user']) && isset($_SESSION['web_user']['username'])) {
+				$htmlUsername = htmlspecialchars($_SESSION['web_user']['username'], ENT_QUOTES, 'UTF-8');
+			} elseif(isset($_SESSION['username'])) {
 				$htmlUsername = htmlspecialchars($_SESSION['username'], ENT_QUOTES, 'UTF-8');
+			}
+			$isWebUserAuthenticated = isset($_SESSION['web_user_authenticated']) && $_SESSION['web_user_authenticated'] === true;
 			?>
+			<?php if($isWebUserAuthenticated) { ?>
+				<a href='settings.php' class='slubbutton secondary' id='settingsbtn' title='<?php translate('Manage switches, credentials, and users'); ?>'><?php translate('Settings'); ?></a>
+			<?php } ?>
 			<?php if(defined('ENABLE_CONFIG_BACKUP') && ENABLE_CONFIG_BACKUP) { ?>
 				<a href='backup.php' class='slubbutton secondary' id='backupbtn' title='<?php translate('Backup switch configurations'); ?>'><?php translate('Backup'); ?></a>
 			<?php } ?>
-			<?php if(ENABLE_PASSWORD_CHANGE) { ?>
+			<?php if(defined('ENABLE_PASSWORD_CHANGE') && ENABLE_PASSWORD_CHANGE) { ?>
 				<a href='password.php' class='slubbutton secondary' id='pwchangebtn' title='Passwort auf allen Switchen ändern'><?php translate('Change Password'); ?></a>
 			<?php } ?>
 			<?php if($htmlUsername != '') { ?>

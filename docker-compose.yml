@@ -12,9 +12,13 @@ services:
       - cisco-switch-manager-gui-backups:/var/lib/cisco-switch-manager-gui/backups
       # Backup settings (GitHub credentials, etc.)
       - ./backup_settings.json:/var/lib/cisco-switch-manager-gui/backup_settings.json
+      # Persistent data storage (users, switches, credentials)
+      - cisco-switch-manager-gui-data:/var/lib/cisco-switch-manager-gui/data
     environment:
       - TZ=America/Chicago
 
 volumes:
   cisco-switch-manager-gui-backups:
     name: cisco-switch-manager-gui-backups
+  cisco-switch-manager-gui-data:
+    name: cisco-switch-manager-gui-data

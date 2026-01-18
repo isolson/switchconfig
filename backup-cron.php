@@ -65,15 +65,23 @@ if (!defined('ENABLE_CONFIG_BACKUP') || !ENABLE_CONFIG_BACKUP) {
 	exit(1);
 }
 
-// Check for credential templates
-if (!defined('CREDENTIAL_TEMPLATES') || empty(CREDENTIAL_TEMPLATES)) {
-	output("ERROR: No credential templates defined. Add CREDENTIAL_TEMPLATES to config.php", $quiet);
+// Check for credentials (from datastore or config.php)
+$hasCredentials = false;
+$storedCreds = getAllCredentials();
+if (!empty($storedCreds)) {
+	$hasCredentials = true;
+} elseif (defined('CREDENTIAL_TEMPLATES') && !empty(CREDENTIAL_TEMPLATES)) {
+	$hasCredentials = true;
+}
+
+if (!$hasCredentials) {
+	output("ERROR: No credentials configured. Add credentials via Settings page or CREDENTIAL_TEMPLATES in config.php", $quiet);
 	exit(1);
 }
 
 output("Starting config backup...", $quiet);
 
-$switches = SWITCHES;
+$switches = getAllSwitches();
 $successCount = 0;
 $failCount = 0;
 $results = [];

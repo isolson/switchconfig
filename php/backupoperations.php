@@ -3,14 +3,20 @@
 require_once('functions.php');
 
 /**
- * Get credentials for a switch (from template or session)
+ * Get credentials for a switch (from datastore, template, or session)
  *
  * @param array $switch Switch config array
  * @param bool $useSession Whether to fallback to session credentials
  * @return array|false ['username' => ..., 'password' => ...] or false
  */
 function getCredentialsForSwitch($switch, $useSession = true) {
-	// Check if switch has a credential template assigned
+	// First, try to get credentials from the datastore
+	$datastoreCreds = getCredentialsForSwitchFromDatastore($switch);
+	if ($datastoreCreds !== null) {
+		return $datastoreCreds;
+	}
+
+	// Check if switch has a credential template assigned in config.php
 	if (isset($switch['credential']) && defined('CREDENTIAL_TEMPLATES')) {
 		foreach (CREDENTIAL_TEMPLATES as $template) {
 			if ($template['id'] === $switch['credential']) {
@@ -476,11 +482,12 @@ function compareConfigs($file1, $file2) {
  * @return array Results for each switch
  */
 function backupAllSwitches($progressCallback = null) {
+	$switches = getAllSwitches();
 	$results = [];
-	$total = count(SWITCHES);
+	$total = count($switches);
 	$current = 0;
 
-	foreach (SWITCHES as $switch) {
+	foreach ($switches as $switch) {
 		$current++;
 		$switchAddr = $switch['addr'];
 		$switchName = $switch['name'] ?? $switchAddr;

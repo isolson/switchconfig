@@ -12,10 +12,30 @@ if(MAINT == true && $_SERVER['REMOTE_ADDR'] != MAINT_IP) {
 
 /*** START SESSION ***/
 require_once(__DIR__.'/session-options.php');
+require_once(__DIR__.'/auth.php');
 
 
 /*** AUTH CHECK ***/
-if(!(isset($_SESSION['username']) && isset($_SESSION['password']))) {
+// Check for web user authentication (new method)
+$webUserAuthenticated = isWebUserAuthenticated();
+
+// Check for legacy switch-only authentication (backward compatibility)
+$legacyAuthenticated = isset($_SESSION['username']) && isset($_SESSION['password']);
+
+// Determine if user is authenticated
+// - If datastore is initialized (users exist), require web auth
+// - If datastore not initialized (no users), allow legacy switch auth
+$isAuthenticated = false;
+
+if (isDatastoreInitialized()) {
+	// Web users exist, require web auth
+	$isAuthenticated = $webUserAuthenticated;
+} else {
+	// No web users, allow legacy switch auth or web auth
+	$isAuthenticated = $webUserAuthenticated || $legacyAuthenticated;
+}
+
+if (!$isAuthenticated) {
 	// redirect to login page
 	if(empty($SUPRESS_NOTLOGGEDIN_MESSAGE)) {
 		redirectToLogin('notloggedin');

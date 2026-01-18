@@ -65,7 +65,7 @@ if(isset($_POST['newpw']) && isset($_POST['newpw2'])) {
 
 				echo "<script>beginFadeOutAnimation();</script>";
 
-				foreach(SWITCHES as $currentswitch) {
+				foreach(getAllSwitches() as $currentswitch) {
 					echo "<span>" . $currentswitch['name'] . "...</span>&nbsp;"; flush(); ob_flush();
 
 					$connection = ssh2_connect($currentswitch['addr'], 22);

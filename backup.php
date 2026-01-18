@@ -266,7 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 						<input type="hidden" name="tab" value="history">
 						<select name="history_switch" onchange="this.form.submit();" class="fullwidth">
 							<option value=""><?php echo translate('Select a switch...', false); ?></option>
-							<?php foreach (SWITCHES as $s) { ?>
+							<?php foreach (getAllSwitches() as $s) { ?>
 								<option value="<?php echo htmlspecialchars($s['addr']); ?>" <?php echo $selectedSwitch === $s['addr'] ? 'selected' : ''; ?>>
 									<?php echo htmlspecialchars($s['name']); ?>
 								</option>
@@ -357,7 +357,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 							<th><?php echo translate('Last Backup', false); ?></th>
 							<th><?php echo translate('Actions', false); ?></th>
 						</tr>
-						<?php foreach (SWITCHES as $s) {
+						<?php foreach (getAllSwitches() as $s) {
 							$latestBackup = getLatestBackup($s['addr']);
 							$statusClass = $latestBackup ? 'status-ok' : 'status-none';
 							$statusText = $latestBackup ? $latestBackup['date'] : translate('No backup', false);

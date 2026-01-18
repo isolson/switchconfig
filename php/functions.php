@@ -1,5 +1,7 @@
 <?php
 
+require_once(__DIR__ . '/switchmanagement.php');
+
 /* General */
 const TEXT_LENGTH = 25;
 function shortText($in) {
@@ -7,12 +9,23 @@ function shortText($in) {
 }
 
 function getSwitchByAddr($addr) {
-	foreach(SWITCHES as $s) {
+	// Use merged switches from datastore + config.php
+	$switches = getMergedSwitches();
+	foreach($switches as $s) {
 		if($s['addr'] == $addr) {
 			return $s;
 		}
 	}
 	return null;
+}
+
+/**
+ * Get all switches (from datastore or config.php fallback)
+ *
+ * @return array All switches
+ */
+function getAllSwitches() {
+	return getMergedSwitches();
 }
 
 function getSnippetById($id) {
