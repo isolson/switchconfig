@@ -4,10 +4,56 @@
  * Datastore - JSON file read/write with file locking
  *
  * Provides safe concurrent access to JSON data files stored in
- * /var/lib/cisco-switch-manager-gui/data/
+ * /var/lib/cisco-switch-manager-gui/data/ or a fallback location.
  */
 
-define('DATA_DIR', '/var/lib/cisco-switch-manager-gui/data');
+/**
+ * Get the data directory path, using fallback if primary isn't writable
+ *
+ * @return string Data directory path
+ */
+function getDataDir() {
+	static $dataDir = null;
+
+	if ($dataDir !== null) {
+		return $dataDir;
+	}
+
+	// Primary location (Docker/production)
+	$primaryDir = '/var/lib/cisco-switch-manager-gui/data';
+
+	// Fallback location (relative to web app)
+	$fallbackDir = __DIR__ . '/../data';
+
+	// Check if primary exists and is writable
+	if (is_dir($primaryDir) && is_writable($primaryDir)) {
+		$dataDir = $primaryDir;
+		return $dataDir;
+	}
+
+	// Try to create primary directory
+	if (!is_dir($primaryDir)) {
+		// Check if parent directory exists and is writable
+		$parentDir = dirname($primaryDir);
+		if (is_dir($parentDir) && is_writable($parentDir)) {
+			if (@mkdir($primaryDir, 0755, true)) {
+				$dataDir = $primaryDir;
+				return $dataDir;
+			}
+		}
+	}
+
+	// Use fallback directory
+	if (!is_dir($fallbackDir)) {
+		@mkdir($fallbackDir, 0755, true);
+	}
+
+	$dataDir = $fallbackDir;
+	return $dataDir;
+}
+
+// For backward compatibility
+define('DATA_DIR', getDataDir());
 
 /**
  * Ensure the data directory exists
@@ -15,10 +61,16 @@ define('DATA_DIR', '/var/lib/cisco-switch-manager-gui/data');
  * @return bool Success
  */
 function ensureDataDir() {
-	if (!is_dir(DATA_DIR)) {
-		if (!@mkdir(DATA_DIR, 0755, true)) {
+	$dir = getDataDir();
+	if (!is_dir($dir)) {
+		if (!@mkdir($dir, 0755, true)) {
+			error_log("Datastore: Failed to create directory: $dir");
 			return false;
 		}
+	}
+	if (!is_writable($dir)) {
+		error_log("Datastore: Directory not writable: $dir");
+		return false;
 	}
 	return true;
 }
@@ -30,7 +82,7 @@ function ensureDataDir() {
  * @return string Full path
  */
 function getDataPath($filename) {
-	return DATA_DIR . '/' . $filename;
+	return getDataDir() . '/' . $filename;
 }
 
 /**
