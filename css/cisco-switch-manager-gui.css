@@ -5,6 +5,93 @@
 	height: 50px;
 }
 
+/* Top menu - responsive flexbox layout */
+#topmenu {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 15px;
+	gap: 10px;
+}
+
+.topmenu-left {
+	display: flex;
+	align-items: center;
+}
+
+.topmenu-center {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 5px;
+	justify-content: center;
+	flex: 1;
+}
+
+.topmenu-right {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 5px;
+	justify-content: flex-end;
+}
+
+/* Brand styling */
+.brand-link {
+	display: flex;
+	align-items: center;
+	text-decoration: none;
+	color: #333;
+	font-weight: bold;
+	font-size: 1.1em;
+	gap: 8px;
+	white-space: nowrap;
+}
+
+.brand-link:hover {
+	color: #cc0000;
+}
+
+.brand-icon {
+	display: inline-block;
+	width: 28px;
+	height: 16px;
+	background-color: #cc0000;
+	border-radius: 2px;
+	position: relative;
+}
+
+.brand-icon::before {
+	content: '';
+	position: absolute;
+	top: 3px;
+	left: 3px;
+	right: 3px;
+	bottom: 3px;
+	background: repeating-linear-gradient(
+		to right,
+		#fff 0px, #fff 3px,
+		transparent 3px, transparent 5px
+	);
+}
+
+.brand-text {
+	color: inherit;
+}
+
+#zoomlinks {
+	display: inline-flex;
+	gap: 3px;
+	margin-left: 10px;
+}
+
+#zoomlinks a {
+	min-width: 45px;
+	padding: 5px 8px;
+	font-size: 0.85em;
+}
+
 form:not(#frmLogin) .form-row {
 	margin-bottom: 	10px;
 }
@@ -208,9 +295,48 @@ img[src='img/disabled.svg'] {
 	.demoStatusIcon > img {
 		background-color: rgba(60,60,60,1);
 	}
+	.brand-link {
+		color: #fff;
+	}
+	.brand-link:hover {
+		color: #ff6666;
+	}
 }
 
 /* mobile device adjustments */
+@media only screen and (max-width: 768px) {
+	#topmenu {
+		flex-direction: column;
+		align-items: stretch;
+		padding: 10px;
+	}
+
+	.topmenu-left {
+		justify-content: center;
+		margin-bottom: 5px;
+	}
+
+	.topmenu-center {
+		justify-content: center;
+		order: 3;
+	}
+
+	.topmenu-right {
+		justify-content: center;
+		order: 2;
+		margin-bottom: 5px;
+	}
+
+	.brand-text {
+		font-size: 0.95em;
+	}
+
+	#zoomlinks {
+		margin-left: 0;
+		margin-top: 5px;
+	}
+}
+
 @media only screen and (max-width: 620px) {
 	#function_intstatuslist,
 	#function_intmatrix,
@@ -221,5 +347,22 @@ img[src='img/disabled.svg'] {
 	.tipicon {
 		top: 9px !important;
 		right: 75px !important;
+	}
+
+	.topmenu-center a.slubbutton,
+	.topmenu-right a.slubbutton {
+		padding: 8px 12px;
+		font-size: 0.9em;
+	}
+}
+
+/* widescreen adjustments */
+@media only screen and (min-width: 1200px) {
+	#topmenu {
+		padding: 10px 30px;
+	}
+
+	.topmenu-center {
+		gap: 10px;
 	}
 }

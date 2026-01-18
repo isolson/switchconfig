@@ -76,10 +76,12 @@ $_LANG['Directory does not exist yet. It will be created automatically.'] = 'Dir
 $_LANG['Directory is not writable. Check permissions.'] = 'Directory is not writable. Check permissions.';
 
 // Navigation
+$_LANG['Switch Manager'] = 'Switch Manager';
 $_LANG['Monitoring'] = 'Monitoring';
 $_LANG['Backups'] = 'Backups';
 $_LANG['Switch Monitoring'] = 'Switch Monitoring';
 $_LANG['Manage switches'] = 'Manage switches';
+$_LANG['Manage switches and settings'] = 'Manage switches and settings';
 $_LANG['Manage users and system settings'] = 'Manage users and system settings';
 $_LANG['Change switch password'] = 'Change switch password';
 $_LANG['Password'] = 'Password';
@@ -87,6 +89,17 @@ $_LANG['Password'] = 'Password';
 // Misc
 $_LANG['you'] = 'you';
 $_LANG['Manage switches, credentials, and users.'] = 'Manage switches, credentials, and users.';
+$_LANG['Manage switches and credentials.'] = 'Manage switches and credentials.';
+$_LANG['Manage switches and credentials'] = 'Manage switches and credentials';
+$_LANG['App preferences and users'] = 'App preferences and users';
+$_LANG['App preferences and user management.'] = 'App preferences and user management.';
+$_LANG['Appearance'] = 'Appearance';
+$_LANG['Customize the look and feel of the application.'] = 'Customize the look and feel of the application.';
+$_LANG['Theme'] = 'Theme';
+$_LANG['Choose between light and dark mode, or use your system preference.'] = 'Choose between light and dark mode, or use your system preference.';
+$_LANG['Light'] = 'Light';
+$_LANG['Dark'] = 'Dark';
+$_LANG['Note: Theme preference is saved in your browser.'] = 'Note: Theme preference is saved in your browser.';
 $_LANG['Switch Management'] = 'Switch Management';
 $_LANG['Add, edit, or remove switches.'] = 'Add, edit, or remove switches.';
 $_LANG['Credential Management'] = 'Credential Management';
